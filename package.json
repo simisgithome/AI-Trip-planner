@@ -1,0 +1,114 @@
+{
+  "name": "ai-trip-planner",
+  "version": "1.0.0",
+  "description": "AI-powered travel planning application using Google Cloud Vertex AI",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "start:backend": "nodemon backend/server.js",
+    "start:frontend": "cd frontend && npm start",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "jest backend/",
+    "test:frontend": "cd frontend && npm test",
+    "dev": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "lint": "eslint backend/ frontend/src/",
+    "lint:fix": "eslint backend/ frontend/src/ --fix",
+    "format": "prettier --write backend/ frontend/src/",
+    "prepare": "husky install"
+  },
+  "keywords": [
+    "ai",
+    "travel",
+    "planning",
+    "itinerary",
+    "vertex-ai",
+    "google-cloud",
+    "react",
+    "express",
+    "nodejs"
+  ],
+  "author": "AI Trip Planner Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "compression": "^1.7.4",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "prettier": "^3.1.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/ai-trip-planner.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/ai-trip-planner/issues"
+  },
+  "homepage": "https://github.com/your-username/ai-trip-planner#readme",
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "backend/**/*.js",
+      "!backend/node_modules/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "airbnb-base"
+    ],
+    "env": {
+      "node": true,
+      "jest": true
+    },
+    "rules": {
+      "no-console": "warn",
+      "comma-dangle": [
+        "error",
+        "never"
+      ]
+    }
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "none",
+    "singleQuote": true,
+    "printWidth": 80,
+    "tabWidth": 2
+  }
+}
