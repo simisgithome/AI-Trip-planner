@@ -1,291 +1,124 @@
-# AI Trip Planner
+# Basic ADK Agent Example
 
-An intelligent travel planning application that uses Google Cloud Vertex AI to generate personalized trip itineraries based on user preferences, budget, and interests.
+## What is an ADK Agent?
 
-## 🌟 Features
+The `LlmAgent` (often aliased simply as `Agent`) is a core component in ADK that acts as the "thinking" part of your application. It leverages the power of a Large Language Model (LLM) for:
+- Reasoning
+- Understanding natural language
+- Making decisions
+- Generating responses
+- Interacting with tools
 
-- **AI-Powered Itinerary Generation**: Leverages Google Cloud Vertex AI to create detailed, personalized travel plans
-- **Interactive Trip Form**: Easy-to-use interface for collecting user preferences
-- **Detailed Daily Plans**: Day-by-day activities with times, costs, and descriptions
-- **Smart Recommendations**: Restaurant, accommodation, and transportation suggestions
-- **Budget Tracking**: Estimated costs for activities and overall trip budget
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+Unlike deterministic workflow agents that follow predefined paths, an `LlmAgent`'s behavior is non-deterministic. It uses the LLM to interpret instructions and context, deciding dynamically how to proceed, which tools to use (if any), or whether to transfer control to another agent.
 
-## 🏗️ Architecture
+## Required Agent Structure
+
+For ADK to discover and run your agents properly (especially with `adk web`), your project must follow a specific structure:
 
 ```
-AI-Trip-Planner/
-│
-├─ frontend/          # React.js frontend application
-│   ├─ components/    # Reusable UI components
-│   ├─ screens/       # Main application screens
-│   └─ App.js         # Main app component
-│
-├─ backend/           # Node.js/Express.js backend
-│   ├─ routes/        # API route definitions
-│   ├─ controllers/   # Business logic controllers
-│   └─ server.js      # Express server setup
-│
-├─ ai-engine/         # Python AI integration
-│   └─ itinerary-generator.py  # Vertex AI integration
-│
-└─ database/          # Database schema documentation
-    └─ schema.md      # Firestore/PostgreSQL schemas
+parent_folder/
+    agent_folder/         # This is your agent's package directory
+        __init__.py       # Must import agent.py
+        agent.py          # Must define root_agent
+        .env              # Environment variables
 ```
 
-## 🚀 Getting Started
+### Essential Components:
 
-### Prerequisites
+1. **`__init__.py`**
+   - Must import the agent module: `from . import agent`
+   - This makes your agent discoverable by ADK
 
-- Node.js (v16 or higher)
-- Python (v3.8 or higher)
-- Google Cloud Platform account (for Vertex AI)
-- npm or yarn package manager
+2. **`agent.py`**
+   - Must define a variable named `root_agent`
+   - This is the entry point that ADK uses to find your agent
 
-### Installation
+3. **Command Location**
+   - Always run `adk` commands from the parent directory, not from inside the agent directory
+   - Example: Run `adk web` from the parent folder that contains your agent folder
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd AI-Trip-Planner
-   ```
+This structure ensures that ADK can automatically discover and load your agent when running commands like `adk web` or `adk run`.
 
-2. **Install backend dependencies**
-   ```bash
-   npm install
-   ```
+## Key Components
 
-3. **Install frontend dependencies**
-   ```bash
-   cd frontend
-   npm install
-   cd ..
-   ```
+### 1. Identity (`name` and `description`)
+- **name** (Required): A unique string identifier for your agent
+- **description** (Optional, but recommended): A concise summary of the agent's capabilities. Used for other agents to determine if they should route a task to this agent.
 
-4. **Install Python dependencies**
-   ```bash
-   cd ai-engine
-   pip install -r requirements.txt
-   cd ..
-   ```
+### 2. Model (`model`)
+- Specifies which LLM powers the agent (e.g., "gemini-2.0-flash")
+- Affects the agent's capabilities, cost, and performance
 
-5. **Set up Google Cloud credentials**
-   ```bash
-   # Set environment variables
-   export GOOGLE_CLOUD_PROJECT_ID=your-project-id
-   export GOOGLE_CLOUD_REGION=us-central1
-   
-   # Or create a .env file in the root directory
-   echo "GOOGLE_CLOUD_PROJECT_ID=your-project-id" > .env
-   echo "GOOGLE_CLOUD_REGION=us-central1" >> .env
-   ```
+### 3. Instructions (`instruction`)
+The most critical parameter for shaping your agent's behavior. It defines:
+- Core task or goal
+- Personality or persona
+- Behavioral constraints
+- How to use available tools
+- Desired output format
 
-### Running the Application
+### 4. Tools (`tools`)
+Optional capabilities beyond the LLM's built-in knowledge, allowing the agent to:
+- Interact with external systems
+- Perform calculations
+- Fetch real-time data
+- Execute specific actions
 
-1. **Start the backend server**
-   ```bash
-   npm run start:backend
-   # or
-   node backend/server.js
-   ```
+## Getting Started
 
-2. **Start the frontend development server**
-   ```bash
-   npm run start:frontend
-   # or
-   cd frontend && npm start
-   ```
+This example uses the same virtual environment created in the root directory. Make sure you have:
 
-3. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:3001
-   - Health check: http://localhost:3001/health
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Create a `.env` file in the root directory with the following variables:
-
-```env
-# Google Cloud Configuration
-GOOGLE_CLOUD_PROJECT_ID=your-project-id
-GOOGLE_CLOUD_REGION=us-central1
-
-# Server Configuration
-PORT=3001
-NODE_ENV=development
-
-# Database Configuration (optional)
-DATABASE_URL=your-database-url
-```
-
-### Google Cloud Setup
-
-1. **Create a Google Cloud Project**
-   - Go to [Google Cloud Console](https://console.cloud.google.com)
-   - Create a new project or select existing one
-
-2. **Enable Vertex AI API**
-   ```bash
-   gcloud services enable aiplatform.googleapis.com
-   ```
-
-3. **Set up authentication**
-   ```bash
-   gcloud auth application-default login
-   ```
-
-## 📡 API Documentation
-
-### Endpoints
-
-#### Generate Itinerary
-```
-POST /api/itinerary
-```
-
-**Request Body:**
-```json
-{
-  "destination": "Paris, France",
-  "startDate": "2025-03-15",
-  "endDate": "2025-03-20",
-  "budget": 2500,
-  "travelers": 2,
-  "interests": ["culture", "food", "art"],
-  "preferences": "Romantic getaway, museums, fine dining"
-}
-```
-
-**Response:**
-```json
-{
-  "id": 1,
-  "destination": "Paris, France",
-  "duration": 5,
-  "estimatedBudget": 2800,
-  "dailyPlans": [...],
-  "recommendations": {...},
-  "createdAt": "2025-01-15T10:30:00Z"
-}
-```
-
-#### Get Itinerary
-```
-GET /api/itinerary/:id
-```
-
-#### Update Itinerary
-```
-PUT /api/itinerary/:id
-```
-
-#### Delete Itinerary
-```
-DELETE /api/itinerary/:id
-```
-
-## 🧪 Testing
-
-### Backend Tests
+1. Activated the virtual environment from the root directory:
 ```bash
-npm run test:backend
+# macOS/Linux:
+source ../.venv/bin/activate
+# Windows CMD:
+..\.venv\Scripts\activate.bat
+# Windows PowerShell:
+..\.venv\Scripts\Activate.ps1
 ```
 
-### Frontend Tests
+2. Set up your API key:
+   - Rename `.env.example` to `.env` in the greeting_agent folder
+   - Add your Google API key to the `GOOGLE_API_KEY` variable in the `.env` file
+
+## Running the Example
+
+To run this basic agent example, you'll use the ADK CLI tool which provides several ways to interact with your agent:
+
+1. Navigate to the 1-basic-agent directory containing your agent folder.
+2. Start the interactive web UI:
 ```bash
-npm run test:frontend
+adk web
 ```
 
-### AI Engine Tests
-```bash
-cd ai-engine
-python -m pytest tests/
-```
+3. Access the web UI by opening the URL shown in your terminal (typically http://localhost:8000)
 
-## 🚢 Deployment
+4. Select your agent from the dropdown menu in the top-left corner of the UI
 
-### Docker Deployment
-```bash
-# Build and run with Docker Compose
-docker-compose up --build
-```
+5. Start chatting with your agent in the textbox at the bottom of the screen
 
-### Google Cloud Deployment
-```bash
-# Deploy to Google Cloud Run
-gcloud run deploy ai-trip-planner \
-  --source . \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated
-```
+### Troubleshooting
 
-### Traditional Hosting
-1. Build the frontend: `npm run build:frontend`
-2. Set `NODE_ENV=production`
-3. Start the server: `npm start`
+If your agent doesn't appear in the dropdown menu:
+- Make sure you're running `adk web` from the parent directory (1-basic-agent), not from inside the agent directory
+- Check that your `__init__.py` properly imports the agent module
+- Verify that `agent.py` defines a variable named `root_agent`
 
-## 🛠️ Development
+### Alternative Run Methods
 
-### Project Structure
+The ADK CLI tool provides several options:
 
-- **Frontend**: React.js with hooks for state management
-- **Backend**: Express.js with RESTful API design
-- **AI Engine**: Python with Google Cloud Vertex AI integration
-- **Database**: Supports both Firestore and PostgreSQL
+- **`adk web`**: Launches an interactive web UI for testing your agent with a chat interface
+- **`adk run [agent_name]`**: Runs your agent directly in the terminal
+- **`adk api_server`**: Starts a FastAPI server to test API requests to your agent
 
-### Adding New Features
+### Example Prompts to Try
 
-1. **Frontend Components**: Add to `frontend/components/`
-2. **API Routes**: Add to `backend/routes/`
-3. **AI Functionality**: Extend `ai-engine/itinerary-generator.py`
-4. **Database Schema**: Update `database/schema.md`
+- "How do you say hello in Spanish?"
+- "What's a formal greeting in Japanese?"
+- "Tell me how to greet someone in French"
 
-### Code Style
+You can exit the conversation or stop the server by pressing `Ctrl+C` in your terminal.
 
-- **JavaScript**: ESLint + Prettier
-- **Python**: Black + Flake8
-- **Commits**: Conventional Commits format
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/new-feature`
-3. Commit changes: `git commit -m 'feat: add new feature'`
-4. Push to branch: `git push origin feature/new-feature`
-5. Submit a pull request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-- **Documentation**: Check the `/docs` folder for detailed guides
-- **Issues**: Report bugs via GitHub Issues
-- **Discussions**: Use GitHub Discussions for questions
-
-## 🙏 Acknowledgments
-
-- Google Cloud Vertex AI for AI capabilities
-- React.js community for frontend framework
-- Express.js for backend framework
-- All contributors and beta testers
-
-## 📊 Roadmap
-
-- [ ] User authentication and profiles
-- [ ] Social sharing of itineraries
-- [ ] Mobile app development
-- [ ] Integration with booking platforms
-- [ ] Offline mode support
-- [ ] Multi-language support
-- [ ] Advanced budget tracking
-- [ ] Weather integration
-- [ ] Real-time collaboration
-
----
-
-**Happy Travels! 🌍✈️**
+This example demonstrates a simple agent that responds to greeting-related queries, showing the fundamentals of agent creation with ADK.
